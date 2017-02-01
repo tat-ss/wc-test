@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <script src="./bundle.js"></script>
+  </head>
+  <body>
+    <div id="container">
+      <x-app position="100"/>
+    </div>
+    <script>
+     const store = { position: 100 };
+     const container = document.getElementById('container');
+     container.addEventListener('action', event => {
+       switch(event.detail.name) {
+         case 'left':
+           store.position -= 10;
+           break;
+         case 'right':
+           store.position += 10;
+           break;
+       }
+       container.innerHTML = `<x-app position="${store.position}">`;
+     });
+    </script>
+  </body>
+</html>
