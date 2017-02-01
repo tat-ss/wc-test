@@ -1,90 +1,121 @@
-const createAction = name => new CustomEvent('action', {
-  bubbles: true,
-  composed: true,
-  detail: { name },
-});
+(() => {
+  const { elementOpen, elementClose, elementVoid, text, patch } = IncrementalDOM;
 
-class App extends HTMLElement {
-  constructor() {
-    super();
-    this.locals = {};
-    this.locals.shadowRoot = this.attachShadow({mode: 'closed'});
-  }
+  const createAction = name => new CustomEvent('action', {
+    bubbles: true,
+    composed: true,
+    detail: { name },
+  });
 
-  render() {
-    const { shadowRoot } = this.locals;
-    const position = this.getAttribute('position');
-    shadowRoot.innerHTML = `
-      <x-screen position="${position}"></x-screen>
-      <x-joy-stick></x-joy-stick>
-    `;
-  }
+  class App extends HTMLElement {
+    constructor() {
+      super();
+      this.locals = {
+        shadowRoot: this.attachShadow({ mode: 'closed' }),
+        connected: false,
+      };
+    }
 
-  static get observedAttributes() { return ['position']; }
-
-  attributeChangedCallback(name, oldValue, newValue, namespaceURI) {
-    if (name === 'position') {
+    connectedCallback() {
+      this.connected = true;
       this.render();
     }
-  }
-}
 
-class Screen extends HTMLElement {
-  constructor() {
-    super();
-    this.locals = {};
-    this.locals.shadowRoot = this.attachShadow({mode: 'closed'});
-  }
+    disconnectedCallback() {
+      this.connected = false;
+    }
 
-  static get observedAttributes() { return ['position']; }
+    render() {
+      if (!this.connected) return;
 
-  attributeChangedCallback(name, oldValue, newValue, namespaceURI) {
-    if (name === 'position') {
-      this.render();
+      const { shadowRoot } = this.locals;
+      const position = this.getAttribute('position');
+      patch(shadowRoot, () => {
+        elementOpen('x-screen', null, null, 'position', position);
+        elementClose('x-screen');
+        elementOpen('x-joy-stick');
+        elementClose('x-joy-stick');
+      });
+    }
+
+    static get observedAttributes() { return ['position']; }
+
+    attributeChangedCallback(name, oldValue, newValue, namespaceURI) {
+      if (name === 'position') {
+        this.render();
+      }
     }
   }
 
-  render() {
-    const { shadowRoot } = this.locals;
-    const position = this.getAttribute('position');
-    shadowRoot.innerHTML = `
-      <style>
-         .screen-parent {
-           background-color: lime;
-         }
-         .screen-child {
-           background-color: red;
-           border-radius: 20px;
-           width: 40px;
-           height: 40px;
-           margin-left: ${position}px;
-         }
-      </style>
-      <div class="screen-parent">
-        <div class="screen-child" />
-      </div>
-    `;
-  }
-}
+  class Screen extends HTMLElement {
+    constructor() {
+      super();
+      this.locals = {
+        shadowRoot: this.attachShadow({ mode: 'closed' }),
+        connected: false,
+      };
+    }
 
-class JoyStick extends HTMLElement {
-  constructor() {
-    super();
-    this.locals = {};
-    const shadowRoot = this.attachShadow({mode: 'closed'});
-    shadowRoot.innerHTML = `
+    connectedCallback() {
+      this.connected = true;
+      this.render();
+    }
+
+    disconnectedCallback() {
+      this.connected = false;
+    }
+
+    static get observedAttributes() { return ['position']; }
+
+    attributeChangedCallback(name, oldValue, newValue, namespaceURI) {
+      if (name === 'position') {
+        this.render();
+      }
+    }
+
+    render() {
+      if (!this.connected) return;
+
+      const { shadowRoot } = this.locals;
+      const position = this.getAttribute('position');
+      patch(shadowRoot, () => {
+        elementOpen('style');
+        text(`
+        .screen-parent {
+          background-color: lime;
+        }
+        .screen-child {
+          background-color: red;
+          border-radius: 20px;
+          width: 40px;
+          height: 40px;
+        }
+      `)
+        elementClose('style');
+        elementOpen('div', null, ['class', 'screen-parent']);
+        elementVoid('div', null, ['class', 'screen-child'], 'style', `margin-left:${position}px;`);
+        elementClose('div');
+      });
+    }
+  }
+
+  class JoyStick extends HTMLElement {
+    connectedCallback() {
+      const shadowRoot = this.attachShadow({ mode: 'closed' });
+      shadowRoot.innerHTML = `
       <button class="jc-left">Left</button>
       <button class="jc-right">Right</button>
     `;
-    shadowRoot.querySelector('.jc-left').addEventListener('click', event => {
-      this.dispatchEvent(createAction('left'));
-    });
-    shadowRoot.querySelector('.jc-right').addEventListener('click', event => {
-      this.dispatchEvent(createAction('right'));
-    });
+      shadowRoot.querySelector('.jc-left').addEventListener('click', event => {
+        this.dispatchEvent(createAction('left'));
+      });
+      shadowRoot.querySelector('.jc-right').addEventListener('click', event => {
+        this.dispatchEvent(createAction('right'));
+      });
+    }
   }
-}
 
-customElements.define('x-app', App);
-customElements.define('x-screen', Screen);
-customElements.define('x-joy-stick', JoyStick);
+  customElements.define('x-app', App);
+  customElements.define('x-screen', Screen);
+  customElements.define('x-joy-stick', JoyStick);
+})();

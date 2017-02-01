@@ -1,25 +1,30 @@
 <html>
   <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/incrementaldom/0.5.1/incremental-dom-min.js"></script>
     <script src="./bundle.js"></script>
   </head>
   <body>
-    <div id="container">
-      <x-app position="100"/>
-    </div>
+    <div id="container"><x-app position="100"/></div>
     <script>
-     const store = { position: 100 };
-     const container = document.getElementById('container');
-     container.addEventListener('action', event => {
-       switch(event.detail.name) {
-         case 'left':
-           store.position -= 10;
-           break;
-         case 'right':
-           store.position += 10;
-           break;
-       }
-       container.innerHTML = `<x-app position="${store.position}">`;
-     });
+     (() => {
+       const { elementOpen, elementClose, elementVoid, text, patch } = IncrementalDOM;
+       const store = { position: 100 };
+       const container = document.getElementById('container');
+       container.addEventListener('action', event => {
+         switch(event.detail.name) {
+           case 'left':
+             store.position -= 10;
+             break;
+           case 'right':
+             store.position += 10;
+             break;
+         }
+         patch(container, () => {
+           elementOpen('x-app', null, null, 'position', store.position);
+           elementClose('x-app');
+         });
+       });
+     })();
     </script>
   </body>
 </html>
