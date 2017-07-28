@@ -20,7 +20,7 @@
    'strict mode';
 
    const { elementOpen, elementClose, elementVoid, text, patch, skipNode, currentPointer } = IncrementalDOM;
-   const template = document.currentScript.ownerDocument.querySelector('x-screen-template');
+   const template = document.currentScript.ownerDocument.querySelector('#x-screen-template');
 
    class Screen extends HTMLElement {
      constructor() {
