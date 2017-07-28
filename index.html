@@ -1,29 +1,53 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/incrementaldom/0.5.1/incremental-dom-min.js"></script>
-    <script src="./bundle.js"></script>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webcomponentsjs/1.0.4/webcomponents-hi-ce.js"></script>
+    <link rel="import" href="components/incrementaldom/incrementaldom.html">
+    <link rel="import" href="components/x-app/x-app.html">
   </head>
   <body>
-    <div id="container"><x-app position="100"></x-app></div>
+    <div id="container">Now loading...</div>
     <script>
-     (() => {
-       const { elementOpen, elementClose, elementVoid, text, patch } = IncrementalDOM;
-       const store = { position: 100 };
-       const container = document.getElementById('container');
-       container.addEventListener('action', event => {
-         switch(event.detail.name) {
-           case 'left':
-             store.position -= 10;
-             break;
-           case 'right':
-             store.position += 10;
-             break;
-         }
-         patch(container, () => {
-           elementOpen('x-app', null, null, 'position', store.position);
-           elementClose('x-app');
+     (function() {
+       'use strict';
+
+       const app = (idom) => {
+         const { elementOpen, elementClose, elementVoid, text, patch } = idom;
+         const store = { position: 100 };
+         const container = document.getElementById('container');
+         const render = () => {
+           patch(container, () => {
+             elementOpen('x-app', null, null, 'position', store.position);
+             elementClose('x-app');
+           });
+         };
+
+         container.addEventListener('action', event => {
+           switch(event.detail.name) {
+             case 'left':
+               store.position -= 10;
+               break;
+             case 'right':
+               store.position += 10;
+               break;
+           }
+           render();
          });
-       });
+
+         render();
+       };
+
+       if (window.WebComponents) {
+         window.addEventListener('WebComponentsReady', function() {
+           console.log('Components are ready');
+           app(window.IncrementalDOM);
+         });
+       } else {
+         console.log('Native');
+         app(window.IncrementalDOM);
+       }
      })();
     </script>
   </body>

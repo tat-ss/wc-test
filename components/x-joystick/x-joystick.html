@@ -1,0 +1,41 @@
+<template id="x-joystick-template">
+  <style>
+   button {
+     touch-action: manipulation;
+     user-select: none;
+   }
+  </style>
+  <button class="jc-left">Left</button>
+  <button class="jc-right">Right</button>
+</template>
+
+<script>
+ (function() {
+   'strict mode';
+
+   const createAction = name => new CustomEvent('action', {
+     bubbles: true,
+     composed: true,
+     detail: { name },
+   });
+
+   const template = document.currentScript.ownerDocument.querySelector('#x-joystick-template');
+
+   class JoyStick extends HTMLElement {
+     constructor() {
+       super();
+
+       const shadowRoot = this.attachShadow({ mode: 'open' });
+       shadowRoot.appendChild(template.content.cloneNode(true));
+       shadowRoot.querySelector('.jc-left').addEventListener('click', event => {
+         this.dispatchEvent(createAction('left'));
+       });
+       shadowRoot.querySelector('.jc-right').addEventListener('click', event => {
+         this.dispatchEvent(createAction('right'));
+       });
+     }
+   }
+
+   customElements.define('x-joy-stick', JoyStick);
+ })();
+</script>

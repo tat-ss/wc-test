@@ -1,0 +1,38 @@
+<link rel="import" href="../incrementaldom/incrementaldom.html">
+<link rel="import" href="../x-screen/x-screen.html">
+<link rel="import" href="../x-joystick/x-joystick.html">
+<script>
+ (function() {
+   'use strict';
+
+   const { elementOpen, elementClose, elementVoid, text, patch } = IncrementalDOM;
+
+   class App extends HTMLElement {
+     constructor() {
+       super();
+       this.attachShadow({ mode: 'open' });
+       this.render();
+     }
+
+     static get observedAttributes() { return ['position']; }
+
+     attributeChangedCallback(name, oldValue, newValue, namespaceURI) {
+       if (name === 'position') {
+         this.render();
+       }
+     }
+
+     render() {
+       const position = this.getAttribute('position');
+
+       patch(this.shadowRoot, () => {
+         elementOpen('x-screen', null, null, 'position', position);
+         elementClose('x-screen');
+         elementOpen('x-joy-stick');
+         elementClose('x-joy-stick');
+       });
+     }
+   }
+   customElements.define('x-app', App);
+ })();
+</script>

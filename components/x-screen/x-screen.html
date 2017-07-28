@@ -1,0 +1,53 @@
+<link rel="import" href="../incrementaldom/incrementaldom.html">
+
+<template id="x-screen-template">
+  <style>
+   .parent {
+     background-color: #ccc;
+   }
+   .child {
+     background-color: #999;
+     border-radius: 20px;
+     width: 40px;
+     height: 40px;
+   }
+  </style>
+  <div id="body" />
+</template>
+
+<script>
+ (function() {
+   'strict mode';
+
+   const { elementOpen, elementClose, elementVoid, text, patch, skipNode, currentPointer } = IncrementalDOM;
+   const template = document.currentScript.ownerDocument.querySelector('x-screen-template');
+
+   class Screen extends HTMLElement {
+     constructor() {
+       super();
+       this.attachShadow({ mode: 'open' });
+       this.shadowRoot.appendChild(template.content.cloneNode(true));
+       this.render();
+     }
+
+     static get observedAttributes() { return ['position']; }
+
+     attributeChangedCallback(name, oldValue, newValue, namespaceURI) {
+       if (name === 'position') {
+         this.render();
+       }
+     }
+
+     render() {
+       const position = this.getAttribute('position');
+
+       patch(this.shadowRoot.querySelector('#body'), () => {
+         elementOpen('div', null, ['class', 'parent']);
+         elementVoid('div', null, ['class', 'child'], 'style', `margin-left:${position}px;`);
+         elementClose('div');
+       });
+     }
+   }
+   customElements.define('x-screen', Screen);
+ })();
+</script>
